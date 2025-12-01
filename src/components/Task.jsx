@@ -3,9 +3,17 @@ import "./Task.css";
 import Sidebar from "./Sidebar";
 import Header from "./Header.jsx";
 import { taskService } from "../services/taskService";
+import { useForm } from "react-hook-form";
 
 const Task = () => {
   const [tasks, setTasks] = useState([]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   async function loadTasks() {
     try {
@@ -20,37 +28,21 @@ const Task = () => {
     loadTasks();
   }, []);
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-
+  async function onSubmit(data) {
     try {
-      const form = event.target;
-
       const todo = {
-        title: form.todoTitle.value,
-        description: form.todoDescription.value,
-        dueDate: form.todoDueDate.value || null,
-        personId: form.todoPerson.value || null,
+        title: data.title,
+        description: data.description,
+        dueDate: data.dueDate || null,
+        personId: data.personId || null,
         completed: false,
       };
 
-      if (todo.dueDate) {
-        const selected = new Date(todo.dueDate);
-        const now = new Date();
-
-        if (selected < now) {
-          alert("Due date cannot be in the past.");
-          return;
-        }
-      }
-
-      const files = form.todoAttachments.files;
+      const files = data.attachments;
 
       await taskService.createTask(todo, files);
-
       await loadTasks();
-
-      form.reset();
+      reset();
     } catch (error) {
       console.error("Failed to submit form:", error.message);
     }
@@ -72,44 +64,75 @@ const Task = () => {
               <div className="card shadow-sm task-form-section">
                 <div className="card-body">
                   <h2 className="card-title mb-4">Add New Task</h2>
-                  <form id="todoForm" onSubmit={handleSubmit}>
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    {/* Title */}
                     <div className="mb-3">
-                      <label htmlFor="todoTitle" className="form-label">
-                        Title
-                      </label>
+                      <label className="form-label">Title</label>
                       <input
                         type="text"
                         className="form-control"
-                        id="todoTitle"
-                        required
+                        {...register("title", {
+                          required: "Title is required",
+                        })}
                       />
+                      {errors.title && (
+                        <small className="text-danger">
+                          {errors.title.message}
+                        </small>
+                      )}
                     </div>
+                    {/* Description */}
                     <div className="mb-3">
-                      <label htmlFor="todoDescription" className="form-label">
-                        Description
-                      </label>
+                      <label className="form-label">Description</label>
                       <textarea
                         className="form-control"
-                        id="todoDescription"
                         rows="3"
-                      ></textarea>
+                        {...register("description", {
+                          required: "Description is required",
+                        })}
+                      />
+                      {errors.description && (
+                        <small className="text-danger">
+                          {errors.description.message}
+                        </small>
+                      )}
                     </div>
+                    {/* Due Date */}
                     <div className="row">
                       <div className="col-md-6 mb-3">
-                        <label htmlFor="todoDueDate" className="form-label">
-                          Due Date
-                        </label>
+                        <label className="form-label">Due Date</label>
                         <input
                           type="datetime-local"
                           className="form-control"
-                          id="todoDueDate"
+                          {...register("dueDate", {
+                            validate: (value) => {
+                              // Date is optional-validation:
+                              if (!value) return true;
+
+                              const picked = new Date(value);
+                              const now = new Date();
+
+                              // No dates in the past-validation:
+                              return (
+                                picked >= now ||
+                                "Due date cannot be in the past."
+                              );
+                            },
+                          })}
                         />
+                        {errors.dueDate && (
+                          <small className="text-danger">
+                            {errors.dueDate.message}
+                          </small>
+                        )}
                       </div>
+                      {/* Person */}
                       <div className="col-md-6 mb-3">
-                        <label htmlFor="todoPerson" className="form-label">
-                          Assign to Person
-                        </label>
-                        <select className="form-select" id="todoPerson">
+                        <label className="form-label">Assign to Person</label>
+                        <select
+                          className="form-select"
+                          {...register("personId")}
+                        >
                           <option value="">
                             -- Select Person (Optional) --
                           </option>
@@ -118,14 +141,15 @@ const Task = () => {
                         </select>
                       </div>
                     </div>
+                    {/* Attachments */}
                     <div className="mb-3">
                       <label className="form-label">Attachments</label>
                       <div className="input-group mb-3">
                         <input
                           type="file"
                           className="form-control"
-                          id="todoAttachments"
                           multiple
+                          {...register("attachments")}
                         />
                         <button
                           className="btn btn-outline-secondary"
@@ -134,8 +158,10 @@ const Task = () => {
                           <i className="bi bi-x-lg"></i>
                         </button>
                       </div>
+
                       <div className="file-list" id="attachmentPreview"></div>
                     </div>
+                    {/* Button */}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                       <button type="submit" className="btn btn-primary">
                         <i className="bi bi-plus-lg me-2"></i>
