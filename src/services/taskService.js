@@ -67,8 +67,28 @@ export const taskService = {
     // Will be implemented here.
   },
 
-  remove: async (id) => {
-    // Will be implemented here.
+  removeTask: async (id) => {
+    try {
+      const token = authService.getToken();
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Backend returned non-JSON error:", text);
+        throw new Error("Failed to delete task.");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in remove()", error);
+      throw error;
+    }
   },
 
   getByPerson: async (personId) => {

@@ -48,6 +48,18 @@ const Task = () => {
     }
   }
 
+  async function handleDelete(id) {
+    const ok = window.confirm("Are you sure you want to delete this task?");
+    if (!ok) return;
+
+    try {
+      await taskService.removeTask(id);
+      await loadTasks();
+    } catch (error) {
+      console.error("Failed to delete task:", error.message);
+    }
+  }
+
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={false} onClose={() => {}} />
@@ -161,7 +173,7 @@ const Task = () => {
 
                       <div className="file-list" id="attachmentPreview"></div>
                     </div>
-                    {/* Button */}
+                    {/* AddTask-Button */}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                       <button type="submit" className="btn btn-primary">
                         <i className="bi bi-plus-lg me-2"></i>
@@ -235,21 +247,25 @@ const Task = () => {
                           </div>
 
                           <div className="btn-group ms-3">
+                            {/* Complete Task-Button */}
                             <button
                               className="btn btn-outline-success btn-sm"
                               title="Complete"
                             >
                               <i className="bi bi-check-lg"></i>
                             </button>
+                            {/* Edit Task-Button */}
                             <button
                               className="btn btn-outline-primary btn-sm"
                               title="Edit"
                             >
                               <i className="bi bi-pencil"></i>
                             </button>
+                            {/* Delete Task-Button */}
                             <button
                               className="btn btn-outline-danger btn-sm"
                               title="Delete"
+                              onClick={() => handleDelete(task.id)}
                             >
                               <i className="bi bi-trash"></i>
                             </button>
