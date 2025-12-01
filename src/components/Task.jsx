@@ -19,7 +19,42 @@ const Task = () => {
   useEffect(() => {
     loadTasks();
   }, []);
-  // todo*: make this component functional by implementing state management and API calls
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    try {
+      const form = event.target;
+
+      const todo = {
+        title: form.todoTitle.value,
+        description: form.todoDescription.value,
+        dueDate: form.todoDueDate.value || null,
+        personId: form.todoPerson.value || null,
+        completed: false,
+      };
+
+      if (todo.dueDate) {
+        const selected = new Date(todo.dueDate);
+        const now = new Date();
+
+        if (selected < now) {
+          alert("Due date cannot be in the past.");
+          return;
+        }
+      }
+
+      const files = form.todoAttachments.files;
+
+      await taskService.createTask(todo, files);
+
+      await loadTasks();
+
+      form.reset();
+    } catch (error) {
+      console.error("Failed to submit form:", error.message);
+    }
+  }
 
   return (
     <div className="dashboard-layout">
@@ -37,7 +72,7 @@ const Task = () => {
               <div className="card shadow-sm task-form-section">
                 <div className="card-body">
                   <h2 className="card-title mb-4">Add New Task</h2>
-                  <form id="todoForm">
+                  <form id="todoForm" onSubmit={handleSubmit}>
                     <div className="mb-3">
                       <label htmlFor="todoTitle" className="form-label">
                         Title

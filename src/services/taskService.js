@@ -7,11 +7,10 @@ export const taskService = {
     try {
       const token = authService.getToken();
 
-      const response = await fetch(`${API_URL}/todo`, {
+      const response = await fetch(API_URL, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
       });
 
@@ -27,8 +26,41 @@ export const taskService = {
     }
   },
 
-  create: async (todo, files) => {
-    // Will be implemented here.
+  createTask: async (todo, files) => {
+    try {
+      const token = authService.getToken();
+      const formData = new FormData();
+
+      formData.append(
+        "todo",
+        new Blob([JSON.stringify(todo)], { type: "application/json" })
+      );
+
+      if (files && files.length > 0) {
+        for (let file of files) {
+          formData.append("files", file);
+        }
+      }
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Backend returned non-JSON error:", text);
+        throw new Error("Failed to create task.");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error in createTask()", error);
+      throw error;
+    }
   },
 
   update: async (id, todo, files) => {
