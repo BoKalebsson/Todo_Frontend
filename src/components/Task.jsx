@@ -60,6 +60,20 @@ const Task = () => {
     }
   }
 
+  async function handleComplete(task) {
+    const updatedTodo = {
+      ...task,
+      completed: !task.completed,
+    };
+
+    try {
+      await taskService.updateTask(task.id, updatedTodo, []);
+      await loadTasks();
+    } catch (error) {
+      console.error("Failed to update task:", error.message);
+    }
+  }
+
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={false} onClose={() => {}} />
@@ -251,6 +265,7 @@ const Task = () => {
                             <button
                               className="btn btn-outline-success btn-sm"
                               title="Complete"
+                              onClick={() => handleComplete(task)}
                             >
                               <i className="bi bi-check-lg"></i>
                             </button>

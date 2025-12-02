@@ -63,8 +63,41 @@ export const taskService = {
     }
   },
 
-  update: async (id, todo, files) => {
-    // Will be implemented here.
+  updateTask: async (id, todo, files) => {
+    try {
+      const token = authService.getToken();
+      const formData = new FormData();
+
+      formData.append(
+        "todo",
+        new Blob([JSON.stringify(todo)], { type: "application/json" })
+      );
+
+      if (files && files.length > 0) {
+        for (let file of files) {
+          formData.append("files", file);
+        }
+      }
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const txt = await response.text();
+        console.error("Update failed:", txt);
+        throw new Error("Failed to update task.");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error in updateTask()", error);
+      throw error;
+    }
   },
 
   removeTask: async (id) => {
