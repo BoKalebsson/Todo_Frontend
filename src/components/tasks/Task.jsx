@@ -4,6 +4,7 @@ import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
 import { taskService } from "../../services/taskService.js";
 import { useForm } from "react-hook-form";
+import { formatDate } from "../../utils/dateUtils.js";
 
 const Task = () => {
   const [tasks, setTasks] = useState([]);
@@ -348,8 +349,7 @@ const Task = () => {
                             <div className="d-flex justify-content-between">
                               <h6 className="mb-1">{task.title}</h6>
                               <small className="text-muted ms-2">
-                                Created:{" "}
-                                {task.createdAt ? task.createdAt : "N/A"}
+                                Created: {formatDate(task.createdAt)}
                               </small>
                             </div>
 
@@ -360,7 +360,7 @@ const Task = () => {
                             <div className="d-flex align-items-center flex-wrap">
                               <small className="text-muted me-2">
                                 <i className="bi bi-calendar-event"></i> Due:{" "}
-                                {task.dueDate || "N/A"}
+                                {formatDate(task.dueDate)}
                               </small>
 
                               {task.personId && (
