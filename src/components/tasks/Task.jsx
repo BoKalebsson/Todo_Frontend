@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./Task.css";
-import Sidebar from "./Sidebar";
-import Header from "./Header.jsx";
-import { taskService } from "../services/taskService";
+import Sidebar from "../Sidebar.jsx";
+import Header from "../Header.jsx";
+import { taskService } from "../../services/taskService.js";
 import { useForm } from "react-hook-form";
 
 const Task = () => {
