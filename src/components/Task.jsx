@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form";
 const Task = () => {
   const [tasks, setTasks] = useState([]);
 
+  const [editingTask, setEditingTask] = useState(null);
+
   const {
     register,
     handleSubmit,
@@ -31,18 +33,33 @@ const Task = () => {
   async function onSubmit(data) {
     try {
       const todo = {
+        id: editingTask?.id || null,
         title: data.title,
         description: data.description,
         dueDate: data.dueDate || null,
         personId: data.personId || null,
-        completed: false,
+        completed: editingTask?.completed || false,
+        numberOfAttachments: editingTask?.numberOfAttachments || 0,
+        attachments: editingTask?.attachments || [],
       };
 
       const files = data.attachments;
 
-      await taskService.createTask(todo, files);
+      if (editingTask) {
+        await taskService.updateTask(editingTask.id, todo, files);
+      } else {
+        await taskService.createTask(todo, files);
+      }
+
       await loadTasks();
-      reset();
+      reset({
+        title: "",
+        description: "",
+        dueDate: "",
+        personId: "",
+        attachments: null,
+      });
+      setEditingTask(null);
     } catch (error) {
       console.error("Failed to submit form:", error.message);
     }
@@ -72,6 +89,17 @@ const Task = () => {
     } catch (error) {
       console.error("Failed to update task:", error.message);
     }
+  }
+
+  function startEdit(task) {
+    setEditingTask(task);
+
+    reset({
+      title: task.title,
+      description: task.description,
+      dueDate: task.dueDate ? task.dueDate.slice(0, 16) : "",
+      personId: task.personId || "",
+    });
   }
 
   return (
@@ -190,9 +218,35 @@ const Task = () => {
                     {/* AddTask-Button */}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                       <button type="submit" className="btn btn-primary">
-                        <i className="bi bi-plus-lg me-2"></i>
-                        Add Task
+                        {editingTask ? (
+                          <>
+                            <i className="bi bi-save me-2"></i> Save Changes
+                          </>
+                        ) : (
+                          <>
+                            <i className="bi bi-plus-lg me-2"></i> Add Task
+                          </>
+                        )}
                       </button>
+
+                      {editingTask && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary ms-2"
+                          onClick={() => {
+                            reset({
+                              title: "",
+                              description: "",
+                              dueDate: "",
+                              personId: "",
+                              attachments: null,
+                            });
+                            setEditingTask(null);
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   </form>
                 </div>
@@ -253,9 +307,15 @@ const Task = () => {
                                   {task.personId}
                                 </span>
                               )}
-
-                              <span className="badge bg-warning text-dark me-2">
-                                {task.completed ? "completed" : "pending"}
+                              {/* Badge Completed or Pending */}
+                              <span
+                                className={
+                                  task.completed
+                                    ? "badge bg-success me-2"
+                                    : "badge bg-warning text-dark me-2"
+                                }
+                              >
+                                {task.completed ? "Completed" : "Pending"}
                               </span>
                             </div>
                           </div>
@@ -273,6 +333,7 @@ const Task = () => {
                             <button
                               className="btn btn-outline-primary btn-sm"
                               title="Edit"
+                              onClick={() => startEdit(task)}
                             >
                               <i className="bi bi-pencil"></i>
                             </button>
