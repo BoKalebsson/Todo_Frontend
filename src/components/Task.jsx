@@ -10,10 +10,16 @@ const Task = () => {
 
   const [editingTask, setEditingTask] = useState(null);
 
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [filePreview, setFilePreview] = useState([]);
+
+  const fileInputRef = React.useRef(null);
+
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
   } = useForm();
 
@@ -43,7 +49,7 @@ const Task = () => {
         attachments: editingTask?.attachments || [],
       };
 
-      const files = data.attachments;
+      const files = selectedFiles;
 
       if (editingTask) {
         await taskService.updateTask(editingTask.id, todo, files);
@@ -52,6 +58,7 @@ const Task = () => {
       }
 
       await loadTasks();
+
       reset({
         title: "",
         description: "",
@@ -59,6 +66,14 @@ const Task = () => {
         personId: "",
         attachments: null,
       });
+
+      setSelectedFiles([]);
+      setFilePreview([]);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
       setEditingTask(null);
     } catch (error) {
       console.error("Failed to submit form:", error.message);
@@ -204,16 +219,55 @@ const Task = () => {
                           className="form-control"
                           multiple
                           {...register("attachments")}
+                          ref={fileInputRef}
+                          onChange={(e) => {
+                            const newFiles = Array.from(e.target.files);
+
+                            setSelectedFiles((prev) => {
+                              const filtered = newFiles.filter(
+                                (file) =>
+                                  !prev.some((pf) => pf.name === file.name)
+                              );
+                              return [...prev, ...filtered];
+                            });
+
+                            setFilePreview((prev) => {
+                              const filtered = newFiles
+                                .map((f) => f.name)
+                                .filter((name) => !prev.includes(name));
+                              return [...prev, ...filtered];
+                            });
+                          }}
                         />
                         <button
                           className="btn btn-outline-secondary"
                           type="button"
+                          onClick={() => {
+                            reset({
+                              ...getValues(),
+                              attachments: null,
+                            });
+
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
+
+                            setSelectedFiles([]);
+                            setFilePreview([]);
+                          }}
                         >
                           <i className="bi bi-x-lg"></i>
                         </button>
                       </div>
 
-                      <div className="file-list" id="attachmentPreview"></div>
+                      <div className="file-list mt-2">
+                        {filePreview.length > 0 &&
+                          filePreview.map((name, i) => (
+                            <div key={i} className="small text-muted">
+                              📎 {name}
+                            </div>
+                          ))}
+                      </div>
                     </div>
                     {/* AddTask-Button */}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -241,6 +295,14 @@ const Task = () => {
                               personId: "",
                               attachments: null,
                             });
+
+                            setSelectedFiles([]);
+                            setFilePreview([]);
+
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
+
                             setEditingTask(null);
                           }}
                         >
@@ -305,6 +367,14 @@ const Task = () => {
                                 <span className="badge bg-info me-2">
                                   <i className="bi bi-person"></i> Person #
                                   {task.personId}
+                                </span>
+                              )}
+
+                              {/* Attachment Badge */}
+                              {task.numberOfAttachments > 0 && (
+                                <span className="badge bg-secondary me-2">
+                                  <i className="bi bi-paperclip me-1"></i>
+                                  {task.numberOfAttachments} Attachments
                                 </span>
                               )}
                               {/* Badge Completed or Pending */}
