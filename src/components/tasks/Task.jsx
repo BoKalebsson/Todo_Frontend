@@ -1,10 +1,11 @@
+import TaskList from "./TaskList.jsx";
+import TaskForm from "./TaskForm.jsx";
 import React, { useState, useEffect } from "react";
 import "./Task.css";
 import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
 import { taskService } from "../../services/taskService.js";
 import { useForm } from "react-hook-form";
-import { formatDate } from "../../utils/dateUtils.js";
 
 const Task = () => {
   const [tasks, setTasks] = useState([]);
@@ -118,6 +119,25 @@ const Task = () => {
     });
   }
 
+  function handleCancelEdit() {
+    reset({
+      title: "",
+      description: "",
+      dueDate: "",
+      personId: "",
+      attachments: null,
+    });
+
+    setSelectedFiles([]);
+    setFilePreview([]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    setEditingTask(null);
+  }
+
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={false} onClose={() => {}} />
@@ -134,184 +154,20 @@ const Task = () => {
               <div className="card shadow-sm task-form-section">
                 <div className="card-body">
                   <h2 className="card-title mb-4">Add New Task</h2>
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                    {/* Title */}
-                    <div className="mb-3">
-                      <label className="form-label">Title</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        {...register("title", {
-                          required: "Title is required",
-                        })}
-                      />
-                      {errors.title && (
-                        <small className="text-danger">
-                          {errors.title.message}
-                        </small>
-                      )}
-                    </div>
-                    {/* Description */}
-                    <div className="mb-3">
-                      <label className="form-label">Description</label>
-                      <textarea
-                        className="form-control"
-                        rows="3"
-                        {...register("description", {
-                          required: "Description is required",
-                        })}
-                      />
-                      {errors.description && (
-                        <small className="text-danger">
-                          {errors.description.message}
-                        </small>
-                      )}
-                    </div>
-                    {/* Due Date */}
-                    <div className="row">
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Due Date</label>
-                        <input
-                          type="datetime-local"
-                          className="form-control"
-                          {...register("dueDate", {
-                            validate: (value) => {
-                              // Date is optional-validation:
-                              if (!value) return true;
-
-                              const picked = new Date(value);
-                              const now = new Date();
-
-                              // No dates in the past-validation:
-                              return (
-                                picked >= now ||
-                                "Due date cannot be in the past."
-                              );
-                            },
-                          })}
-                        />
-                        {errors.dueDate && (
-                          <small className="text-danger">
-                            {errors.dueDate.message}
-                          </small>
-                        )}
-                      </div>
-                      {/* Person */}
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Assign to Person</label>
-                        <select
-                          className="form-select"
-                          {...register("personId")}
-                        >
-                          <option value="">
-                            -- Select Person (Optional) --
-                          </option>
-                          <option value="1">Mehrdad Javan</option>
-                          <option value="2">Simon Elbrink</option>
-                        </select>
-                      </div>
-                    </div>
-                    {/* Attachments */}
-                    <div className="mb-3">
-                      <label className="form-label">Attachments</label>
-                      <div className="input-group mb-3">
-                        <input
-                          type="file"
-                          className="form-control"
-                          multiple
-                          {...register("attachments")}
-                          ref={fileInputRef}
-                          onChange={(e) => {
-                            const newFiles = Array.from(e.target.files);
-
-                            setSelectedFiles((prev) => {
-                              const filtered = newFiles.filter(
-                                (file) =>
-                                  !prev.some((pf) => pf.name === file.name)
-                              );
-                              return [...prev, ...filtered];
-                            });
-
-                            setFilePreview((prev) => {
-                              const filtered = newFiles
-                                .map((f) => f.name)
-                                .filter((name) => !prev.includes(name));
-                              return [...prev, ...filtered];
-                            });
-                          }}
-                        />
-                        <button
-                          className="btn btn-outline-secondary"
-                          type="button"
-                          onClick={() => {
-                            reset({
-                              ...getValues(),
-                              attachments: null,
-                            });
-
-                            if (fileInputRef.current) {
-                              fileInputRef.current.value = "";
-                            }
-
-                            setSelectedFiles([]);
-                            setFilePreview([]);
-                          }}
-                        >
-                          <i className="bi bi-x-lg"></i>
-                        </button>
-                      </div>
-
-                      <div className="file-list mt-2">
-                        {filePreview.length > 0 &&
-                          filePreview.map((name, i) => (
-                            <div key={i} className="small text-muted">
-                              📎 {name}
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                    {/* AddTask-Button */}
-                    <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                      <button type="submit" className="btn btn-primary">
-                        {editingTask ? (
-                          <>
-                            <i className="bi bi-save me-2"></i> Save Changes
-                          </>
-                        ) : (
-                          <>
-                            <i className="bi bi-plus-lg me-2"></i> Add Task
-                          </>
-                        )}
-                      </button>
-
-                      {editingTask && (
-                        <button
-                          type="button"
-                          className="btn btn-secondary ms-2"
-                          onClick={() => {
-                            reset({
-                              title: "",
-                              description: "",
-                              dueDate: "",
-                              personId: "",
-                              attachments: null,
-                            });
-
-                            setSelectedFiles([]);
-                            setFilePreview([]);
-
-                            if (fileInputRef.current) {
-                              fileInputRef.current.value = "";
-                            }
-
-                            setEditingTask(null);
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  </form>
+                  <TaskForm
+                    register={register}
+                    handleSubmit={handleSubmit}
+                    onSubmit={onSubmit}
+                    errors={errors}
+                    editingTask={editingTask}
+                    reset={reset}
+                    getValues={getValues}
+                    setSelectedFiles={setSelectedFiles}
+                    filePreview={filePreview}
+                    setFilePreview={setFilePreview}
+                    fileInputRef={fileInputRef}
+                    onCancelEdit={handleCancelEdit}
+                  />
                 </div>
               </div>
 
@@ -334,92 +190,12 @@ const Task = () => {
                   </div>
                 </div>
                 <div className="card-body">
-                  <div className="list-group">
-                    {tasks.length === 0 && (
-                      <p className="text-muted">No tasks found.</p>
-                    )}
-
-                    {tasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className="list-group-item list-group-item-action"
-                      >
-                        <div className="d-flex w-100 justify-content-between align-items-start">
-                          <div className="flex-grow-1">
-                            <div className="d-flex justify-content-between">
-                              <h6 className="mb-1">{task.title}</h6>
-                              <small className="text-muted ms-2">
-                                Created: {formatDate(task.createdAt)}
-                              </small>
-                            </div>
-
-                            <p className="mb-1 text-muted small">
-                              {task.description || "No description"}
-                            </p>
-
-                            <div className="d-flex align-items-center flex-wrap">
-                              <small className="text-muted me-2">
-                                <i className="bi bi-calendar-event"></i> Due:{" "}
-                                {formatDate(task.dueDate)}
-                              </small>
-
-                              {task.personId && (
-                                <span className="badge bg-info me-2">
-                                  <i className="bi bi-person"></i> Person #
-                                  {task.personId}
-                                </span>
-                              )}
-
-                              {/* Attachment Badge */}
-                              {task.numberOfAttachments > 0 && (
-                                <span className="badge bg-secondary me-2">
-                                  <i className="bi bi-paperclip me-1"></i>
-                                  {task.numberOfAttachments} Attachments
-                                </span>
-                              )}
-                              {/* Badge Completed or Pending */}
-                              <span
-                                className={
-                                  task.completed
-                                    ? "badge bg-success me-2"
-                                    : "badge bg-warning text-dark me-2"
-                                }
-                              >
-                                {task.completed ? "Completed" : "Pending"}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="btn-group ms-3">
-                            {/* Complete Task-Button */}
-                            <button
-                              className="btn btn-outline-success btn-sm"
-                              title="Complete"
-                              onClick={() => handleComplete(task)}
-                            >
-                              <i className="bi bi-check-lg"></i>
-                            </button>
-                            {/* Edit Task-Button */}
-                            <button
-                              className="btn btn-outline-primary btn-sm"
-                              title="Edit"
-                              onClick={() => startEdit(task)}
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </button>
-                            {/* Delete Task-Button */}
-                            <button
-                              className="btn btn-outline-danger btn-sm"
-                              title="Delete"
-                              onClick={() => handleDelete(task.id)}
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <TaskList
+                    tasks={tasks}
+                    onEdit={startEdit}
+                    onDelete={handleDelete}
+                    onComplete={handleComplete}
+                  />
                 </div>
               </div>
             </div>
