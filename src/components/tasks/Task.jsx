@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 
 const Task = () => {
   const [tasks, setTasks] = useState([]);
+  const [originalTasks, setOriginalTasks] = useState([]);
 
   const [editingTask, setEditingTask] = useState(null);
 
@@ -16,6 +17,8 @@ const Task = () => {
   const [filePreview, setFilePreview] = useState([]);
 
   const fileInputRef = React.useRef(null);
+
+  const [sortMode, setSortMode] = useState("title");
 
   const {
     register,
@@ -29,6 +32,7 @@ const Task = () => {
     try {
       const data = await taskService.getAllTasks();
       setTasks(data);
+      setOriginalTasks(data);
     } catch (error) {
       console.error("Failed to load tasks:", error.message);
     }
@@ -138,6 +142,48 @@ const Task = () => {
     setEditingTask(null);
   }
 
+  function getSortedTasks() {
+    if (sortMode === "none") {
+      return originalTasks;
+    }
+
+    const sorted = [...tasks];
+
+    switch (sortMode) {
+      case "title":
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+
+      case "date":
+        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+
+      case "completed":
+        sorted.sort((a, b) => Number(b.completed) - Number(a.completed));
+        break;
+
+      default:
+        break;
+    }
+
+    return sorted;
+  }
+
+  function getSortLabel() {
+    switch (sortMode) {
+      case "none":
+        return "None";
+      case "title":
+        return "Title (A–Z)";
+      case "date":
+        return "Created (Newest)";
+      case "completed":
+        return "Completed First";
+      default:
+        return "";
+    }
+  }
+
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={false} onClose={() => {}} />
@@ -173,7 +219,12 @@ const Task = () => {
 
               <div className="card shadow-sm tasks-list mt-4">
                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
-                  <h5 className="card-title mb-0">Tasks</h5>
+                  <div className="d-flex align-items-center gap-2">
+                    <h5 className="card-title mb-0">Tasks</h5>
+                    <small className="text-muted">
+                      — Sorted by: {getSortLabel()}
+                    </small>
+                  </div>
                   <div className="btn-group">
                     <button
                       className="btn btn-outline-secondary btn-sm"
@@ -181,17 +232,62 @@ const Task = () => {
                     >
                       <i className="bi bi-funnel"></i>
                     </button>
-                    <button
-                      className="btn btn-outline-secondary btn-sm"
-                      title="Sort"
-                    >
-                      <i className="bi bi-sort-down"></i>
-                    </button>
+                    <div className="btn-group">
+                      <button
+                        className="btn btn-outline-secondary btn-sm dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        <i className="bi bi-sort-down"></i> Sort
+                      </button>
+
+                      <ul className="dropdown-menu dropdown-menu-end">
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setSortMode("none")}
+                          >
+                            No Sorting
+                          </button>
+                        </li>
+
+                        <li>
+                          <hr className="dropdown-divider" />
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setSortMode("title")}
+                          >
+                            Title
+                          </button>
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setSortMode("date")}
+                          >
+                            Created (Newest)
+                          </button>
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setSortMode("completed")}
+                          >
+                            Completed First
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
                 <div className="card-body">
                   <TaskList
-                    tasks={tasks}
+                    tasks={getSortedTasks()}
                     onEdit={startEdit}
                     onDelete={handleDelete}
                     onComplete={handleComplete}
