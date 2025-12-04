@@ -247,7 +247,7 @@ const Task = () => {
                             className="dropdown-item"
                             onClick={() => setSortMode("none")}
                           >
-                            No Sorting
+                            {sortMode === "none" ? "✔ " : ""} No Sorting
                           </button>
                         </li>
 
@@ -260,7 +260,7 @@ const Task = () => {
                             className="dropdown-item"
                             onClick={() => setSortMode("title")}
                           >
-                            Title
+                            {sortMode === "title" ? "✔ " : ""} Title (A–Z)
                           </button>
                         </li>
 
@@ -269,7 +269,7 @@ const Task = () => {
                             className="dropdown-item"
                             onClick={() => setSortMode("date")}
                           >
-                            Created (Newest)
+                            {sortMode === "date" ? "✔ " : ""} Created (Newest)
                           </button>
                         </li>
 
@@ -278,7 +278,8 @@ const Task = () => {
                             className="dropdown-item"
                             onClick={() => setSortMode("completed")}
                           >
-                            Completed First
+                            {sortMode === "completed" ? "✔ " : ""} Completed
+                            First
                           </button>
                         </li>
                       </ul>
