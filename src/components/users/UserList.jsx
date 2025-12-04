@@ -16,6 +16,18 @@ const UserList = ({ users, onEdit, onDelete }) => {
     return [];
   };
 
+  const getRoleBadgeClasses = (role) => {
+    switch (role) {
+      case "ADMIN":
+        return "bg-primary bg-opacity-25 text-dark";
+      case "MODERATOR":
+        return "bg-warning bg-opacity-25 text-dark";
+      case "USER":
+      default:
+        return "bg-success bg-opacity-25 text-dark";
+    }
+  };
+
   return (
     <div className="list-group">
       {users.map((user) => {
@@ -26,7 +38,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
             key={user.id}
             className="list-group-item list-group-item-action py-3"
           >
-            {/* Name and Buttons for Edit and Delete */}
+            {/* Name and Buttons */}
             <div className="d-flex justify-content-between align-items-start">
               <h5 className="mb-1">{user.name}</h5>
 
@@ -49,7 +61,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
 
             {/* Email + Username */}
             <p className="mb-1">
-              <strong>Email:</strong> {user.email}{" "}
+              <strong>Email:</strong> {user.email}
               <span className="mx-2">—</span>
               <strong>Username:</strong> {user.username}
             </p>
@@ -58,11 +70,17 @@ const UserList = ({ users, onEdit, onDelete }) => {
             <div className="mb-2">
               <strong>Roles: </strong>
               {roles.length > 0 ? (
-                roles.map((role, index) => (
-                  <span key={index} className="badge bg-primary me-2">
-                    {role.replace("ROLE_", "")}
-                  </span>
-                ))
+                roles.map((role, index) => {
+                  const cleanRole = role.replace("ROLE_", "");
+                  return (
+                    <span
+                      key={index}
+                      className={`badge me-2 ${getRoleBadgeClasses(cleanRole)}`}
+                    >
+                      {cleanRole}
+                    </span>
+                  );
+                })
               ) : (
                 <span className="text-muted">No roles</span>
               )}
