@@ -19,6 +19,7 @@ const Task = () => {
   const fileInputRef = React.useRef(null);
 
   const [sortMode, setSortMode] = useState("title");
+  const [filterMode, setFilterMode] = useState("all");
 
   const {
     register,
@@ -144,10 +145,11 @@ const Task = () => {
 
   function getSortedTasks() {
     if (sortMode === "none") {
-      return originalTasks;
+      return getFilteredTasks();
     }
 
-    const sorted = [...tasks];
+    const filtered = getFilteredTasks();
+    const sorted = [...filtered];
 
     switch (sortMode) {
       case "title":
@@ -174,13 +176,49 @@ const Task = () => {
       case "none":
         return "None";
       case "title":
-        return "Title (A–Z)";
+        return "Title";
       case "date":
         return "Created (Newest)";
       case "completed":
         return "Completed First";
       default:
         return "";
+    }
+  }
+
+  function getFilterLabel() {
+    switch (filterMode) {
+      case "completed":
+        return "Completed";
+      case "pending":
+        return "Pending";
+      case "withAttachments":
+        return "With attachments";
+      case "withoutAttachments":
+        return "Without attachments";
+      case "all":
+      default:
+        return "None";
+    }
+  }
+
+  function getFilteredTasks() {
+    switch (filterMode) {
+      case "completed":
+        return tasks.filter((task) => task.completed === true);
+
+      case "pending":
+        return tasks.filter((task) => task.completed === false);
+
+      case "withAttachments":
+        return tasks.filter((task) => task.numberOfAttachments > 0);
+
+      case "withoutAttachments":
+        return tasks.filter((task) => task.numberOfAttachments === 0);
+
+      case "all":
+      default:
+        return tasks;
     }
   }
 
@@ -219,19 +257,85 @@ const Task = () => {
 
               <div className="card shadow-sm tasks-list mt-4">
                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center gap-2">
-                    <h5 className="card-title mb-0">Tasks</h5>
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="d-flex align-items-center gap-2">
+                      <h5 className="card-title mb-0">Tasks</h5>
+                      <small className="text-muted">
+                        — Sorted by: {getSortLabel()}
+                      </small>
+                    </div>
                     <small className="text-muted">
-                      — Sorted by: {getSortLabel()}
+                      — Filter: {getFilterLabel()}
                     </small>
                   </div>
                   <div className="btn-group">
-                    <button
-                      className="btn btn-outline-secondary btn-sm"
-                      title="Filter"
-                    >
-                      <i className="bi bi-funnel"></i>
-                    </button>
+                    <div className="btn-group">
+                      <button
+                        className="btn btn-outline-secondary btn-sm dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        <i className="bi bi-funnel"></i> Filter
+                      </button>
+
+                      <ul className="dropdown-menu dropdown-menu-end">
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterMode("all")}
+                          >
+                            {filterMode === "all" ? "✔ " : ""} Show All
+                          </button>
+                        </li>
+
+                        <li>
+                          <hr className="dropdown-divider" />
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterMode("completed")}
+                          >
+                            {filterMode === "completed" ? "✔ " : ""} Completed
+                          </button>
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterMode("pending")}
+                          >
+                            {filterMode === "pending" ? "✔ " : ""} Pending
+                          </button>
+                        </li>
+
+                        <li>
+                          <hr className="dropdown-divider" />
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterMode("withAttachments")}
+                          >
+                            {filterMode === "withAttachments" ? "✔ " : ""} With
+                            attachments
+                          </button>
+                        </li>
+
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => setFilterMode("withoutAttachments")}
+                          >
+                            {filterMode === "withoutAttachments" ? "✔ " : ""}{" "}
+                            Without attachments
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                     <div className="btn-group">
                       <button
                         className="btn btn-outline-secondary btn-sm dropdown-toggle"
