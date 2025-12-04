@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 function TaskForm({
   register,
@@ -13,7 +13,30 @@ function TaskForm({
   setFilePreview,
   fileInputRef,
   onCancelEdit,
+  formShouldReset,
+  acknowledgeFormResetHandled,
 }) {
+  useEffect(() => {
+    if (formShouldReset) {
+      reset({
+        title: "",
+        description: "",
+        dueDate: "",
+        personId: "",
+        attachments: null,
+      });
+
+      setSelectedFiles([]);
+      setFilePreview([]);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      acknowledgeFormResetHandled();
+    }
+  }, [formShouldReset]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* Title */}

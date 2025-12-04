@@ -1,3 +1,4 @@
+import { useTasks } from "../../hooks/useTasks.js";
 import { sortTasks, getSortLabel } from "../../utils/taskSorting.js";
 import { filterTasks, getFilterLabel } from "../../utils/taskFiltering.js";
 import TaskList from "./TaskList.jsx";
@@ -6,14 +7,21 @@ import React, { useState, useEffect } from "react";
 import "./Task.css";
 import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
-import { taskService } from "../../services/taskService.js";
 import { useForm } from "react-hook-form";
 
 const Task = () => {
-  const [tasks, setTasks] = useState([]);
-  const [originalTasks, setOriginalTasks] = useState([]);
-
-  const [editingTask, setEditingTask] = useState(null);
+  const {
+    tasks,
+    editingTask,
+    loadTasks,
+    submitTask,
+    deleteTask,
+    toggleComplete,
+    startEdit,
+    cancelEdit,
+    formShouldReset,
+    acknowledgeFormResetHandled,
+  } = useTasks();
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [filePreview, setFilePreview] = useState([]);
@@ -31,119 +39,21 @@ const Task = () => {
     formState: { errors },
   } = useForm();
 
-  async function loadTasks() {
-    try {
-      const data = await taskService.getAllTasks();
-      setTasks(data);
-      setOriginalTasks(data);
-    } catch (error) {
-      console.error("Failed to load tasks:", error.message);
-    }
-  }
-
   useEffect(() => {
     loadTasks();
   }, []);
 
-  async function onSubmit(data) {
-    try {
-      const todo = {
-        id: editingTask?.id || null,
-        title: data.title,
-        description: data.description,
-        dueDate: data.dueDate || null,
-        personId: data.personId || null,
-        completed: editingTask?.completed || false,
-        numberOfAttachments: editingTask?.numberOfAttachments || 0,
-        attachments: editingTask?.attachments || [],
-      };
-
-      const files = selectedFiles;
-
-      if (editingTask) {
-        await taskService.updateTask(editingTask.id, todo, files);
-      } else {
-        await taskService.createTask(todo, files);
-      }
-
-      await loadTasks();
-
+  useEffect(() => {
+    if (editingTask) {
       reset({
-        title: "",
-        description: "",
-        dueDate: "",
-        personId: "",
+        title: editingTask.title,
+        description: editingTask.description,
+        dueDate: editingTask.dueDate ? editingTask.dueDate.slice(0, 16) : "",
+        personId: editingTask.personId || "",
         attachments: null,
       });
-
-      setSelectedFiles([]);
-      setFilePreview([]);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      setEditingTask(null);
-    } catch (error) {
-      console.error("Failed to submit form:", error.message);
     }
-  }
-
-  async function handleDelete(id) {
-    const ok = window.confirm("Are you sure you want to delete this task?");
-    if (!ok) return;
-
-    try {
-      await taskService.removeTask(id);
-      await loadTasks();
-    } catch (error) {
-      console.error("Failed to delete task:", error.message);
-    }
-  }
-
-  async function handleComplete(task) {
-    const updatedTodo = {
-      ...task,
-      completed: !task.completed,
-    };
-
-    try {
-      await taskService.updateTask(task.id, updatedTodo, []);
-      await loadTasks();
-    } catch (error) {
-      console.error("Failed to update task:", error.message);
-    }
-  }
-
-  function startEdit(task) {
-    setEditingTask(task);
-
-    reset({
-      title: task.title,
-      description: task.description,
-      dueDate: task.dueDate ? task.dueDate.slice(0, 16) : "",
-      personId: task.personId || "",
-    });
-  }
-
-  function handleCancelEdit() {
-    reset({
-      title: "",
-      description: "",
-      dueDate: "",
-      personId: "",
-      attachments: null,
-    });
-
-    setSelectedFiles([]);
-    setFilePreview([]);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    setEditingTask(null);
-  }
+  }, [editingTask]);
 
   return (
     <div className="dashboard-layout">
@@ -164,7 +74,10 @@ const Task = () => {
                   <TaskForm
                     register={register}
                     handleSubmit={handleSubmit}
-                    onSubmit={onSubmit}
+                    onSubmit={(data) => {
+                      submitTask(data, selectedFiles);
+                      cancelEdit();
+                    }}
                     errors={errors}
                     editingTask={editingTask}
                     reset={reset}
@@ -173,7 +86,9 @@ const Task = () => {
                     filePreview={filePreview}
                     setFilePreview={setFilePreview}
                     fileInputRef={fileInputRef}
-                    onCancelEdit={handleCancelEdit}
+                    onCancelEdit={cancelEdit}
+                    formShouldReset={formShouldReset}
+                    acknowledgeFormResetHandled={acknowledgeFormResetHandled}
                   />
                 </div>
               </div>
@@ -317,8 +232,8 @@ const Task = () => {
                   <TaskList
                     tasks={sortTasks(filterTasks(tasks, filterMode), sortMode)}
                     onEdit={startEdit}
-                    onDelete={handleDelete}
-                    onComplete={handleComplete}
+                    onDelete={deleteTask}
+                    onComplete={toggleComplete}
                   />
                 </div>
               </div>
