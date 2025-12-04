@@ -1,3 +1,5 @@
+import { sortTasks, getSortLabel } from "../../utils/taskSorting.js";
+import { filterTasks, getFilterLabel } from "../../utils/taskFiltering.js";
 import TaskList from "./TaskList.jsx";
 import TaskForm from "./TaskForm.jsx";
 import React, { useState, useEffect } from "react";
@@ -143,85 +145,6 @@ const Task = () => {
     setEditingTask(null);
   }
 
-  function getSortedTasks() {
-    if (sortMode === "none") {
-      return getFilteredTasks();
-    }
-
-    const filtered = getFilteredTasks();
-    const sorted = [...filtered];
-
-    switch (sortMode) {
-      case "title":
-        sorted.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-
-      case "date":
-        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-
-      case "completed":
-        sorted.sort((a, b) => Number(b.completed) - Number(a.completed));
-        break;
-
-      default:
-        break;
-    }
-
-    return sorted;
-  }
-
-  function getSortLabel() {
-    switch (sortMode) {
-      case "none":
-        return "None";
-      case "title":
-        return "Title";
-      case "date":
-        return "Created (Newest)";
-      case "completed":
-        return "Completed First";
-      default:
-        return "";
-    }
-  }
-
-  function getFilterLabel() {
-    switch (filterMode) {
-      case "completed":
-        return "Completed";
-      case "pending":
-        return "Pending";
-      case "withAttachments":
-        return "With attachments";
-      case "withoutAttachments":
-        return "Without attachments";
-      case "all":
-      default:
-        return "None";
-    }
-  }
-
-  function getFilteredTasks() {
-    switch (filterMode) {
-      case "completed":
-        return tasks.filter((task) => task.completed === true);
-
-      case "pending":
-        return tasks.filter((task) => task.completed === false);
-
-      case "withAttachments":
-        return tasks.filter((task) => task.numberOfAttachments > 0);
-
-      case "withoutAttachments":
-        return tasks.filter((task) => task.numberOfAttachments === 0);
-
-      case "all":
-      default:
-        return tasks;
-    }
-  }
-
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={false} onClose={() => {}} />
@@ -261,11 +184,11 @@ const Task = () => {
                     <div className="d-flex align-items-center gap-2">
                       <h5 className="card-title mb-0">Tasks</h5>
                       <small className="text-muted">
-                        — Sorted by: {getSortLabel()}
+                        — Sorted by: {getSortLabel(sortMode)}
                       </small>
                     </div>
                     <small className="text-muted">
-                      — Filter: {getFilterLabel()}
+                      — Filter: {getFilterLabel(filterMode)}
                     </small>
                   </div>
                   <div className="btn-group">
@@ -392,7 +315,7 @@ const Task = () => {
                 </div>
                 <div className="card-body">
                   <TaskList
-                    tasks={getSortedTasks()}
+                    tasks={sortTasks(filterTasks(tasks, filterMode), sortMode)}
                     onEdit={startEdit}
                     onDelete={handleDelete}
                     onComplete={handleComplete}
