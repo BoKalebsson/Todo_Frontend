@@ -1,13 +1,17 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+
 import { useTasks } from "../../hooks/useTasks.js";
+
 import { sortTasks, getSortLabel } from "../../utils/taskSorting.js";
 import { filterTasks, getFilterLabel } from "../../utils/taskFiltering.js";
+
 import TaskList from "./TaskList.jsx";
 import TaskForm from "./TaskForm.jsx";
-import React, { useState, useEffect } from "react";
-import "./Task.css";
 import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
-import { useForm } from "react-hook-form";
+
+import "./Task.css";
 
 const Task = () => {
   const {
@@ -52,6 +56,10 @@ const Task = () => {
         personId: editingTask.personId || "",
         attachments: null,
       });
+
+      setFilePreview(editingTask.attachments?.map((a) => a.fileName) || []);
+
+      setSelectedFiles(editingTask.attachments || []);
     }
   }, [editingTask]);
 
