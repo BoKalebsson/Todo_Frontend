@@ -4,22 +4,36 @@ import Header from "../Header.jsx";
 
 import { useUsers } from "../../hooks/useUsers.js";
 import UserList from "./UserList.jsx";
+import UserCreateForm from "./UserCreateForm.jsx";
 
 const User = () => {
   const {
     users,
     editingUser,
-    loadUsers,
-    startEdit,
+    submitUser,
     deleteUser,
-    createUser,
-    updateUser,
-    setEditingUser,
+    startEdit,
+    cancelEdit,
+    formShouldReset,
+    acknowledgeFormResetHandled,
+    loadUsers,
   } = useUsers();
 
   useEffect(() => {
     loadUsers();
   }, []);
+
+  const handleSubmit = async (data) => {
+    try {
+      await submitUser(data);
+    } catch (err) {
+      console.error("Failed to save user:", err);
+    }
+  };
+
+  const handleCancel = () => {
+    cancelEdit();
+  };
 
   return (
     <div className="dashboard-layout">
@@ -35,21 +49,14 @@ const User = () => {
         <div className="dashboard-content">
           <div className="row">
             <div className="col-md-8 mx-auto">
-              {/* Placeholder for User Form */}
-              <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                  <h2 className="card-title mb-4">
-                    {editingUser ? "Edit User" : "Add New User"}
-                  </h2>
-
-                  <div className="text-muted text-center py-4">
-                    <i className="bi bi-person-plus fs-1 text-secondary"></i>
-                    <p className="mt-3 mb-0">
-                      User creation/editing form will appear here.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* User Form */}
+              <UserCreateForm
+                editingUser={editingUser}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                formShouldReset={formShouldReset}
+                acknowledgeFormResetHandled={acknowledgeFormResetHandled}
+              />
 
               {/* User List */}
               <div className="card shadow-sm">
