@@ -52,7 +52,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
 
                 <button
                   className="btn btn-sm btn-outline-danger"
-                  onClick={() => onDelete(user.id)}
+                  onClick={() => onDelete(user)}
                 >
                   <i className="bi bi-trash"></i>
                 </button>

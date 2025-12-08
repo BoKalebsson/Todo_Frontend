@@ -6,6 +6,8 @@ import { useUsers } from "../../hooks/useUsers.js";
 import UserList from "./UserList.jsx";
 import UserCreateForm from "./UserCreateForm.jsx";
 
+import ConfirmModal from "../ui/ConfirmModal.jsx";
+
 const User = () => {
   const {
     users,
@@ -34,6 +36,14 @@ const User = () => {
   const handleCancel = () => {
     cancelEdit();
   };
+
+  const [showConfirmModal, setShowConfirmModal] = React.useState(false);
+  const [userToDelete, setUserToDelete] = React.useState(null);
+
+  function handleDeleteClick(user) {
+    setUserToDelete(user);
+    setShowConfirmModal(true);
+  }
 
   return (
     <div className="dashboard-layout">
@@ -68,13 +78,29 @@ const User = () => {
                   <UserList
                     users={users}
                     onEdit={startEdit}
-                    onDelete={deleteUser}
+                    onDelete={handleDeleteClick}
                   />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <ConfirmModal
+          show={showConfirmModal}
+          title="Confirm Delete"
+          message={`Are you sure you want to delete the user "${userToDelete?.name}"?`}
+          onConfirm={async () => {
+            if (userToDelete) {
+              await deleteUser(userToDelete.id);
+              setShowConfirmModal(false);
+              setUserToDelete(null);
+            }
+          }}
+          onCancel={() => {
+            setShowConfirmModal(false);
+            setUserToDelete(null);
+          }}
+        />
       </main>
     </div>
   );
