@@ -75,7 +75,7 @@ function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
           <button
             className="btn btn-outline-danger btn-sm"
             title="Delete"
-            onClick={() => onDelete(task.id)}
+            onClick={() => onDelete(task)}
           >
             <i className="bi bi-trash"></i>
           </button>

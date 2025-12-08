@@ -13,6 +13,8 @@ import TaskControls from "./TaskControls.jsx";
 import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
 
+import ConfirmModal from "../ui/ConfirmModal.jsx";
+
 import "./Task.css";
 
 const Task = () => {
@@ -38,6 +40,9 @@ const Task = () => {
 
   const [sortMode, setSortMode] = useState("title");
   const [filterMode, setFilterMode] = useState("all");
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   const {
     register,
@@ -66,6 +71,11 @@ const Task = () => {
       setSelectedFiles(editingTask.attachments || []);
     }
   }, [editingTask]);
+
+  function handleDeleteClick(task) {
+    setTaskToDelete(task);
+    setShowConfirmModal(true);
+  }
 
   return (
     <div className="dashboard-layout">
@@ -120,7 +130,7 @@ const Task = () => {
                   <TaskList
                     tasks={sortTasks(filterTasks(tasks, filterMode), sortMode)}
                     onEdit={startEdit}
-                    onDelete={deleteTask}
+                    onDelete={handleDeleteClick}
                     onComplete={toggleComplete}
                     users={users}
                   />
@@ -129,6 +139,23 @@ const Task = () => {
             </div>
           </div>
         </div>
+        {/* ConfirmModal */}
+        <ConfirmModal
+          show={showConfirmModal}
+          title="Confirm Delete"
+          message={`Are you sure you want to delete the task "${taskToDelete?.title}"?`}
+          onConfirm={async () => {
+            if (taskToDelete) {
+              await deleteTask(taskToDelete.id);
+              setShowConfirmModal(false);
+              setTaskToDelete(null);
+            }
+          }}
+          onCancel={() => {
+            setShowConfirmModal(false);
+            setTaskToDelete(null);
+          }}
+        />
       </main>
     </div>
   );

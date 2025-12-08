@@ -33,9 +33,6 @@ export function useTasks() {
   }
 
   async function deleteTask(id) {
-    const ok = window.confirm("Are you sure you want to delete this task?");
-    if (!ok) return;
-
     try {
       await taskService.removeTask(id);
       await loadTasks();
