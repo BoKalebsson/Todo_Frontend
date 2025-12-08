@@ -1,7 +1,8 @@
 import React from "react";
 import { formatDate } from "../../utils/dateUtils";
 
-function TaskCard({ task, onEdit, onDelete, onComplete }) {
+function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
+  const assignedPerson = users.find((user) => user.id === task.personId);
   return (
     <div className="list-group-item list-group-item-action">
       <div className="d-flex w-100 justify-content-between align-items-start">
@@ -26,9 +27,9 @@ function TaskCard({ task, onEdit, onDelete, onComplete }) {
             </small>
 
             {/* Person */}
-            {task.personId && (
+            {assignedPerson && (
               <span className="badge bg-info me-2">
-                <i className="bi bi-person"></i> Person #{task.personId}
+                <i className="bi bi-person"></i> {assignedPerson.name}
               </span>
             )}
 

@@ -1,7 +1,7 @@
 import React from "react";
 import TaskCard from "./TaskCard.jsx";
 
-function TaskList({ tasks, onEdit, onDelete, onComplete }) {
+function TaskList({ tasks, onEdit, onDelete, onComplete, users }) {
   if (!tasks || tasks.length === 0) {
     return <p className="text-muted">No tasks found.</p>;
   }
@@ -15,6 +15,7 @@ function TaskList({ tasks, onEdit, onDelete, onComplete }) {
           onEdit={onEdit}
           onDelete={onDelete}
           onComplete={onComplete}
+          users={users}
         />
       ))}
     </div>

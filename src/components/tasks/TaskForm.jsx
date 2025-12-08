@@ -15,6 +15,7 @@ function TaskForm({
   onCancelEdit,
   formShouldReset,
   acknowledgeFormResetHandled,
+  users,
 }) {
   useEffect(() => {
     if (formShouldReset) {
@@ -97,8 +98,11 @@ function TaskForm({
           <label className="form-label">Assign to Person</label>
           <select className="form-select" {...register("personId")}>
             <option value="">-- Select Person (Optional) --</option>
-            <option value="1">Mehrdad Javan</option>
-            <option value="2">Simon Elbrink</option>
+            {users?.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>

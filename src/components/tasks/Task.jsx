@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { useTasks } from "../../hooks/useTasks.js";
+import { useUsers } from "../../hooks/useUsers.js";
 
 import { sortTasks } from "../../utils/taskSorting.js";
 import { filterTasks } from "../../utils/taskFiltering.js";
@@ -28,6 +29,8 @@ const Task = () => {
     acknowledgeFormResetHandled,
   } = useTasks();
 
+  const { users, loadUsers } = useUsers();
+
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [filePreview, setFilePreview] = useState([]);
 
@@ -46,6 +49,7 @@ const Task = () => {
 
   useEffect(() => {
     loadTasks();
+    loadUsers();
   }, []);
 
   useEffect(() => {
@@ -99,6 +103,7 @@ const Task = () => {
                     onCancelEdit={cancelEdit}
                     formShouldReset={formShouldReset}
                     acknowledgeFormResetHandled={acknowledgeFormResetHandled}
+                    users={users}
                   />
                 </div>
               </div>
@@ -117,6 +122,7 @@ const Task = () => {
                     onEdit={startEdit}
                     onDelete={deleteTask}
                     onComplete={toggleComplete}
+                    users={users}
                   />
                 </div>
               </div>
