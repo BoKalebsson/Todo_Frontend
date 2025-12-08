@@ -14,6 +14,7 @@ import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
 
 import ConfirmModal from "../ui/ConfirmModal.jsx";
+import { toast } from "react-toastify";
 
 import "./Task.css";
 
@@ -100,6 +101,15 @@ const Task = () => {
                     handleSubmit={handleSubmit}
                     onSubmit={(data) => {
                       submitTask(data, selectedFiles);
+                      if (editingTask) {
+                        toast.info(
+                          `Task "${data.title}" updated successfully!`
+                        );
+                      } else {
+                        toast.success(
+                          `Task "${data.title}" created successfully!`
+                        );
+                      }
                       cancelEdit();
                     }}
                     errors={errors}
@@ -147,6 +157,7 @@ const Task = () => {
           onConfirm={async () => {
             if (taskToDelete) {
               await deleteTask(taskToDelete.id);
+              toast.success(`Task "${taskToDelete.title}" has been deleted`);
               setShowConfirmModal(false);
               setTaskToDelete(null);
             }

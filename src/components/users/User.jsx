@@ -7,6 +7,7 @@ import UserList from "./UserList.jsx";
 import UserCreateForm from "./UserCreateForm.jsx";
 
 import ConfirmModal from "../ui/ConfirmModal.jsx";
+import { toast } from "react-toastify";
 
 const User = () => {
   const {
@@ -27,7 +28,13 @@ const User = () => {
 
   const handleSubmit = async (data) => {
     try {
+      const isUpdate = editingUser !== null;
       await submitUser(data);
+      if (isUpdate) {
+        toast.info(`User "${data.name}" updated successfully!`);
+      } else {
+        toast.success(`User "${data.name}" created successfully!`);
+      }
     } catch (err) {
       console.error("Failed to save user:", err);
     }
@@ -92,6 +99,7 @@ const User = () => {
           onConfirm={async () => {
             if (userToDelete) {
               await deleteUser(userToDelete.id);
+              toast.success(`User "${userToDelete.name}" has been deleted`);
               setShowConfirmModal(false);
               setUserToDelete(null);
             }
