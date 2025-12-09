@@ -3,11 +3,13 @@ import "./Dashboard.css";
 import Sidebar from "./Sidebar";
 import Header from "./Header.jsx";
 import { taskService } from "../services/taskService.js";
+import { userService } from "../services/userService.js";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,10 +29,64 @@ const Dashboard = () => {
     fetchTasks();
   }, []);
 
+  const fetchUsers = async () => {
+    try {
+      const data = await userService.getAllUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error("Could not fetch users.");
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const usersCount = users.length;
+
   const today = new Date();
 
+  const calculateFrontendStatus = (task) => {
+    const today = new Date();
+
+    if (task.completed) {
+      return "completed";
+    }
+
+    if (!task.dueDate) {
+      return "no duedate";
+    }
+
+    if (new Date(task.dueDate) < today) {
+      return "overdue";
+    }
+
+    // Placeholder for in-progress-logic.
+
+    return "pending";
+  };
+
+  const tasksWithStatus = tasks.map((task) => ({
+    ...task,
+    status: calculateFrontendStatus(task),
+  }));
+
+  const pendingCount = tasksWithStatus.filter(
+    (task) => task.status === "pending"
+  ).length;
+  const inProgressCount = tasksWithStatus.filter(
+    (task) => task.status === "in-progress"
+  ).length;
+  const completedCount = tasksWithStatus.filter(
+    (task) => task.status === "completed"
+  ).length;
+  const overdueCount = tasksWithStatus.filter(
+    (task) => task.status === "overdue"
+  ).length;
+  const userCount = 1;
+
   // Use Infinity for tasks with no duedates, to push them to the bottom of the list:
-  const sortedTasks = [...tasks].sort((a, b) => {
+  const sortedTasks = [...tasksWithStatus].sort((a, b) => {
     const dateA = a.dueDate ? new Date(a.dueDate) : Infinity;
     const dateB = b.dueDate ? new Date(b.dueDate) : Infinity;
     return dateA - dateB;
@@ -145,6 +201,10 @@ const Dashboard = () => {
         return "bg-primary";
       case "completed":
         return "bg-success";
+      case "overdue":
+        return "bg-danger";
+      case "no duedate":
+        return "bg-secondary";
       default:
         return "bg-secondary";
     }
@@ -168,7 +228,7 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>Pending</h3>
-                <p className="stat-number">12</p>
+                <p className="stat-number">{pendingCount}</p>
               </div>
             </div>
 
@@ -178,7 +238,7 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>In Progress</h3>
-                <p className="stat-number">5</p>
+                <p className="stat-number">{inProgressCount}</p>
               </div>
             </div>
 
@@ -188,7 +248,7 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>Completed</h3>
-                <p className="stat-number">18</p>
+                <p className="stat-number">{completedCount}</p>
               </div>
             </div>
 
@@ -198,7 +258,7 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>Overdue</h3>
-                <p className="stat-number">3</p>
+                <p className="stat-number">{overdueCount}</p>
               </div>
             </div>
 
@@ -208,7 +268,7 @@ const Dashboard = () => {
               </div>
               <div className="stat-info">
                 <h3>Users</h3>
-                <p className="stat-number">1</p>
+                <p className="stat-number">{usersCount}</p>
               </div>
             </div>
           </div>
