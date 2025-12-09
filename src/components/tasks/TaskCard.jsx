@@ -1,10 +1,23 @@
 import React from "react";
 import { formatDate } from "../../utils/dateUtils";
 
-function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
+function TaskCard({
+  task,
+  onEdit,
+  onDelete,
+  onComplete,
+  users,
+  inProgressTasks,
+  toggleTask,
+}) {
   const assignedPerson = users.find((user) => user.id === task.personId);
   return (
-    <div className="list-group-item list-group-item-action">
+    <div
+      className={`list-group-item list-group-item-action ${
+        inProgressTasks.includes(task.id) ? "bg-primary bg-opacity-10" : ""
+      }`}
+      onClick={() => toggleTask(task.id)}
+    >
       <div className="d-flex w-100 justify-content-between align-items-start">
         {/* Left side: Text + badges */}
         <div className="flex-grow-1">
@@ -41,6 +54,11 @@ function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
               </span>
             )}
 
+            {/* In Progress-badge */}
+            {inProgressTasks.includes(task.id) && (
+              <span className="badge bg-primary me-2">In Progress</span>
+            )}
+
             {/* Status */}
             <span
               className={
@@ -59,7 +77,10 @@ function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
           <button
             className="btn btn-outline-success btn-sm"
             title="Complete"
-            onClick={() => onComplete(task)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onComplete(task);
+            }}
           >
             <i className="bi bi-check-lg"></i>
           </button>
@@ -67,7 +88,10 @@ function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
           <button
             className="btn btn-outline-primary btn-sm"
             title="Edit"
-            onClick={() => onEdit(task)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit(task);
+            }}
           >
             <i className="bi bi-pencil"></i>
           </button>
@@ -75,7 +99,10 @@ function TaskCard({ task, onEdit, onDelete, onComplete, users }) {
           <button
             className="btn btn-outline-danger btn-sm"
             title="Delete"
-            onClick={() => onDelete(task)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(task);
+            }}
           >
             <i className="bi bi-trash"></i>
           </button>

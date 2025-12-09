@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import "./Dashboard.css";
 import Sidebar from "./Sidebar";
 import Header from "./Header.jsx";
 import { taskService } from "../services/taskService.js";
 import { userService } from "../services/userService.js";
+
+import { useInProgressTasks } from "../hooks/useInProgressTasks.js";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -12,6 +14,8 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const { inProgressTasks, toggleTask } = useInProgressTasks();
 
   const fetchTasks = async () => {
     try {
@@ -46,7 +50,7 @@ const Dashboard = () => {
 
   const today = new Date();
 
-  const calculateFrontendStatus = (task) => {
+  const calculateFrontendStatus = (task, inProgressTasks) => {
     const today = new Date();
 
     if (task.completed) {
@@ -61,15 +65,19 @@ const Dashboard = () => {
       return "overdue";
     }
 
-    // Placeholder for in-progress-logic.
+    if (inProgressTasks.includes(task.id)) {
+      return "in-progress";
+    }
 
     return "pending";
   };
 
-  const tasksWithStatus = tasks.map((task) => ({
-    ...task,
-    status: calculateFrontendStatus(task),
-  }));
+  const tasksWithStatus = useMemo(() => {
+    return tasks.map((task) => ({
+      ...task,
+      status: calculateFrontendStatus(task, inProgressTasks),
+    }));
+  }, [tasks, inProgressTasks]);
 
   const pendingCount = tasksWithStatus.filter(
     (task) => task.status === "pending"
@@ -168,6 +176,16 @@ const Dashboard = () => {
                       <i className="bi bi-three-dots-vertical"></i>
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => toggleTask(task.id)}
+                        >
+                          {inProgressTasks.includes(task.id)
+                            ? "Stop Working"
+                            : "Start Working"}
+                        </button>
+                      </li>
                       <li>
                         <button className="dropdown-item">Edit</button>
                       </li>
