@@ -15,7 +15,7 @@ function TaskCard({
     <div
       className={`list-group-item list-group-item-action ${
         inProgressTasks.includes(task.id) ? "bg-primary bg-opacity-10" : ""
-      }`}
+      } ${task.completed ? "bg-success bg-opacity-10" : ""}`}
       onClick={() => toggleTask(task.id)}
     >
       <div className="d-flex w-100 justify-content-between align-items-start">
