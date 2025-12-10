@@ -25,9 +25,14 @@ const Dashboard = () => {
 
   const handleToggleComplete = async (task) => {
     try {
+      const wasCompleted = task.completed;
       await hookToggleComplete(task);
       await fetchTasks();
-      toast.success(`Task "${task.title}" marked as complete!`);
+      if (wasCompleted) {
+        toast.info(`Task "${task.title}" marked as incomplete!`);
+      } else {
+        toast.success(`Task "${task.title}" marked as complete!`);
+      }
     } catch (err) {
       toast.error("Could not update task.");
     }
@@ -136,7 +141,10 @@ const Dashboard = () => {
 
   // Add tasks with no duedates to the list:
   const recentTasks = sortedTasks.filter(
-    (task) => !task.dueDate || new Date(task.dueDate) >= today
+    (task) =>
+      task.status === "completed" ||
+      !task.dueDate ||
+      new Date(task.dueDate) >= today
   );
 
   // Tasks must have a duedate, to be able to be overdue:
