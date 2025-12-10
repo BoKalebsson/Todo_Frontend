@@ -23,10 +23,15 @@ const Dashboard = () => {
   const { deleteTask: hookDeleteTask, toggleComplete: hookToggleComplete } =
     useTasks();
 
-  async function handleDelete(id) {
-    await hookDeleteTask(id);
-    await fetchTasks();
-  }
+  const handleToggleComplete = async (task) => {
+    try {
+      await hookToggleComplete(task);
+      await fetchTasks();
+      toast.success(`Task "${task.title}" marked as complete!`);
+    } catch (err) {
+      toast.error("Could not update task.");
+    }
+  };
 
   const handleDeleteClick = (task) => {
     setTaskToDelete(task);
