@@ -5,6 +5,8 @@ import Header from "./Header.jsx";
 import { taskService } from "../services/taskService.js";
 import { userService } from "../services/userService.js";
 
+import { useNavigate } from "react-router-dom";
+
 import { useTasks } from "../hooks/useTasks.js";
 import { useInProgressTasks } from "../hooks/useInProgressTasks.js";
 
@@ -23,6 +25,12 @@ const Dashboard = () => {
   async function handleToggleComplete(task) {
     await hookToggleComplete(task);
     await fetchTasks();
+  }
+
+  const navigate = useNavigate();
+
+  function handleEditTask(task) {
+    navigate("/dashboard/tasks", { state: { task } });
   }
 
   const [tasks, setTasks] = useState([]);
@@ -72,16 +80,16 @@ const Dashboard = () => {
       return "completed";
     }
 
+    if (inProgressTasks.includes(task.id)) {
+      return "in-progress";
+    }
+
     if (!task.dueDate) {
       return "no duedate";
     }
 
     if (new Date(task.dueDate) < today) {
       return "overdue";
-    }
-
-    if (inProgressTasks.includes(task.id)) {
-      return "in-progress";
     }
 
     return "pending";
@@ -202,7 +210,12 @@ const Dashboard = () => {
                         </button>
                       </li>
                       <li>
-                        <button className="dropdown-item">Edit</button>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => handleEditTask(task)}
+                        >
+                          Edit
+                        </button>
                       </li>
                       <li>
                         <button

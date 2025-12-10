@@ -13,6 +13,8 @@ import TaskControls from "./TaskControls.jsx";
 import Sidebar from "../Sidebar.jsx";
 import Header from "../Header.jsx";
 
+import { useLocation } from "react-router-dom";
+
 import ConfirmModal from "../ui/ConfirmModal.jsx";
 import { toast } from "react-toastify";
 
@@ -77,6 +79,15 @@ const Task = () => {
     setTaskToDelete(task);
     setShowConfirmModal(true);
   }
+
+  // Reroute from Dashboard, when editing a task:
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.task) {
+      startEdit(location.state.task);
+    }
+  }, [location.state]);
 
   return (
     <div className="dashboard-layout">
