@@ -7,11 +7,17 @@ import { userService } from "../services/userService.js";
 
 import { useNavigate } from "react-router-dom";
 
+import ConfirmModal from "../Components/ui/ConfirmModal.jsx";
+import { toast } from "react-toastify";
+
 import { useTasks } from "../hooks/useTasks.js";
 import { useInProgressTasks } from "../hooks/useInProgressTasks.js";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   // Used to solve state not updating properly:
   const { deleteTask: hookDeleteTask, toggleComplete: hookToggleComplete } =
@@ -22,10 +28,10 @@ const Dashboard = () => {
     await fetchTasks();
   }
 
-  async function handleToggleComplete(task) {
-    await hookToggleComplete(task);
-    await fetchTasks();
-  }
+  const handleDeleteClick = (task) => {
+    setTaskToDelete(task);
+    setShowConfirmModal(true);
+  };
 
   const navigate = useNavigate();
 
@@ -231,7 +237,7 @@ const Dashboard = () => {
                       <li>
                         <button
                           className="dropdown-item text-danger"
-                          onClick={() => handleDelete(task.id)}
+                          onClick={() => handleDeleteClick(task)}
                         >
                           Delete
                         </button>
@@ -340,6 +346,25 @@ const Dashboard = () => {
             />
           </div>
         </div>
+        <ConfirmModal
+          show={showConfirmModal}
+          title="Confirm Delete"
+          message={`Are you sure you want to delete the task "${taskToDelete?.title}"?`}
+          onConfirm={async () => {
+            if (taskToDelete) {
+              await hookDeleteTask(taskToDelete.id);
+              await fetchTasks();
+              setShowConfirmModal(false);
+              setTaskToDelete(null);
+
+              toast.success(`Task "${taskToDelete.title}" has been deleted!`);
+            }
+          }}
+          onCancel={() => {
+            setShowConfirmModal(false);
+            setTaskToDelete(null);
+          }}
+        />
       </main>
     </div>
   );
