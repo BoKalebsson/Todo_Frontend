@@ -80,6 +80,22 @@ const Task = () => {
     setShowConfirmModal(true);
   }
 
+  const handleToggleCompleteTaskList = async (task) => {
+    try {
+      const wasCompleted = task.completed;
+      await toggleComplete(task);
+      await loadTasks();
+
+      if (wasCompleted) {
+        toast.info(`Task "${task.title}" marked as incomplete!`);
+      } else {
+        toast.success(`Task "${task.title}" marked as complete!`);
+      }
+    } catch (err) {
+      toast.error("Could not update task.");
+    }
+  };
+
   // Reroute from Dashboard, when editing a task:
   const location = useLocation();
 
@@ -152,7 +168,7 @@ const Task = () => {
                     tasks={sortTasks(filterTasks(tasks, filterMode), sortMode)}
                     onEdit={startEdit}
                     onDelete={handleDeleteClick}
-                    onComplete={toggleComplete}
+                    onComplete={handleToggleCompleteTaskList}
                     users={users}
                   />
                 </div>
