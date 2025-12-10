@@ -338,18 +338,38 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="tasks-grid">
-            <TaskTable
-              tasks={recentTasks}
-              title="Recent Tasks"
-              isOverdue={false}
-            />
-            <TaskTable
-              tasks={overdueTasks}
-              title="Overdue Tasks"
-              isOverdue={true}
-            />
-          </div>
+          {/* Loading spinner */}
+          {loading && (
+            <div className="text-center my-4">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-2">Loading tasks...</p>
+            </div>
+          )}
+
+          {/* Error message */}
+          {error && (
+            <div className="alert alert-danger my-4" role="alert">
+              {error}
+            </div>
+          )}
+
+          {/* Tasks grid */}
+          {!loading && !error && (
+            <div className="tasks-grid">
+              <TaskTable
+                tasks={recentTasks}
+                title="Recent Tasks"
+                isOverdue={false}
+              />
+              <TaskTable
+                tasks={overdueTasks}
+                title="Overdue Tasks"
+                isOverdue={true}
+              />
+            </div>
+          )}
         </div>
         <ConfirmModal
           show={showConfirmModal}
