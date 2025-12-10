@@ -5,10 +5,25 @@ import Header from "./Header.jsx";
 import { taskService } from "../services/taskService.js";
 import { userService } from "../services/userService.js";
 
+import { useTasks } from "../hooks/useTasks.js";
 import { useInProgressTasks } from "../hooks/useInProgressTasks.js";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Used to solve state not updating properly:
+  const { deleteTask: hookDeleteTask, toggleComplete: hookToggleComplete } =
+    useTasks();
+
+  async function handleDelete(id) {
+    await hookDeleteTask(id);
+    await fetchTasks();
+  }
+
+  async function handleToggleComplete(task) {
+    await hookToggleComplete(task);
+    await fetchTasks();
+  }
 
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
@@ -190,13 +205,21 @@ const Dashboard = () => {
                         <button className="dropdown-item">Edit</button>
                       </li>
                       <li>
-                        <button className="dropdown-item">Mark Complete</button>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => handleToggleComplete(task)}
+                        >
+                          Mark Complete
+                        </button>
                       </li>
                       <li>
                         <hr className="dropdown-divider" />
                       </li>
                       <li>
-                        <button className="dropdown-item text-danger">
+                        <button
+                          className="dropdown-item text-danger"
+                          onClick={() => handleDelete(task.id)}
+                        >
                           Delete
                         </button>
                       </li>
