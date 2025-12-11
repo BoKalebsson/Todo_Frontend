@@ -130,10 +130,63 @@ export const taskService = {
   },
 
   getByPerson: async (personId) => {
-    // Will be implemented here.
+    try {
+      const token = authService.getToken();
+
+      const response = await fetch(`${API_URL}/user/${personId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Backend returned non-JSON error:", text);
+
+        if (text.includes("Access Denied")) {
+          throw new Error("You are not allowed to view tasks for this user.");
+        }
+
+        throw new Error("Failed to fetch tasks for user.");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error in getByPerson()", error);
+      throw error;
+    }
   },
 
   getByStatus: async (completedStatus) => {
-    // Will be implemented here.
+    try {
+      const token = authService.getToken();
+
+      const response = await fetch(
+        `${API_URL}/status?completed=${completedStatus}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Backend returned non-JSON error:", text);
+
+        if (text.includes("Access Denied")) {
+          throw new Error("You are not allowed to view these tasks.");
+        }
+
+        throw new Error("Failed to fetch tasks by status.");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error in getByStatus()", error);
+      throw error;
+    }
   },
 };
