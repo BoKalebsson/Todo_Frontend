@@ -114,6 +114,11 @@ export const taskService = {
       if (!response.ok) {
         const text = await response.text();
         console.error("Backend returned non-JSON error:", text);
+
+        if (text.includes("Access Denied")) {
+          throw new Error("You are not allowed to delete this task.");
+        }
+
         throw new Error("Failed to delete task.");
       }
 

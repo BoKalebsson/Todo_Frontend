@@ -183,10 +183,15 @@ const Task = () => {
           message={`Are you sure you want to delete the task "${taskToDelete?.title}"?`}
           onConfirm={async () => {
             if (taskToDelete) {
-              await deleteTask(taskToDelete.id);
-              toast.success(`Task "${taskToDelete.title}" has been deleted`);
-              setShowConfirmModal(false);
-              setTaskToDelete(null);
+              try {
+                await deleteTask(taskToDelete.id);
+                toast.success(`Task "${taskToDelete.title}" has been deleted`);
+              } catch (error) {
+                toast.error(error.message);
+              } finally {
+                setShowConfirmModal(false);
+                setTaskToDelete(null);
+              }
             }
           }}
           onCancel={() => {

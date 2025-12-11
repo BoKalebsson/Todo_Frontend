@@ -38,6 +38,7 @@ export function useTasks() {
       await loadTasks();
     } catch (error) {
       console.error("Failed to delete task:", error.message);
+      throw error;
     }
   }
 
