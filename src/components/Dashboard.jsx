@@ -164,7 +164,10 @@ const Dashboard = () => {
             <span className="badge bg-danger ms-2">{tasks.length}</span>
           )}
         </h2>
-        <button className="btn btn-link text-decoration-none">
+        <button
+          className="btn btn-link text-decoration-none"
+          onClick={() => navigate("/dashboard/tasks")}
+        >
           View All
           <i className="bi bi-arrow-right ms-2"></i>
         </button>
