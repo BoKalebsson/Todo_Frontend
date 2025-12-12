@@ -15,12 +15,18 @@ export function useTasks() {
     }
   }
 
-  async function submitTask(todo, files) {
+  async function submitTask(todo, files, existingFiles) {
+    const attachmentsToKeep = existingFiles.map((file) => file.id);
     try {
       if (editingTask) {
-        await taskService.updateTask(editingTask.id, todo, files);
+        await taskService.updateTask(
+          editingTask.id,
+          todo,
+          files,
+          attachmentsToKeep
+        );
       } else {
-        await taskService.createTask(todo, files);
+        await taskService.createTask(todo, files, attachmentsToKeep);
       }
 
       await loadTasks();

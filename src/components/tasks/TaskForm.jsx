@@ -16,6 +16,8 @@ function TaskForm({
   formShouldReset,
   acknowledgeFormResetHandled,
   users,
+  existingFiles,
+  setExistingFiles,
 }) {
   useEffect(() => {
     if (formShouldReset) {
@@ -118,20 +120,40 @@ function TaskForm({
             {...register("attachments")}
             ref={fileInputRef}
             onChange={(e) => {
-              const newFiles = Array.from(e.target.files);
+              const newlySelectedFiles = Array.from(e.target.files);
 
-              setSelectedFiles((prev) => {
-                const filtered = newFiles.filter(
-                  (file) => !prev.some((pf) => pf.name === file.name)
+              // Name of existing files:
+              const existingFileNames = existingFiles.map(
+                (file) => file.fileName
+              );
+
+              // Keep only newly selected files that are NOT already among existing files:
+              const nonDuplicateNewFiles = newlySelectedFiles.filter(
+                (file) => !existingFileNames.includes(file.name)
+              );
+
+              // Merge previous selected files with new non-duplicate files:
+              setSelectedFiles((prevSelectedFiles) => {
+                // Ensure no duplicates are added
+                const filteredPrev = prevSelectedFiles.filter(
+                  (file) =>
+                    !nonDuplicateNewFiles.some(
+                      (newFile) => newFile.name === file.name
+                    )
                 );
-                return [...prev, ...filtered];
+                return [...filteredPrev, ...nonDuplicateNewFiles];
               });
 
-              setFilePreview((prev) => {
-                const filtered = newFiles
-                  .map((f) => f.name)
-                  .filter((name) => !prev.includes(name));
-                return [...prev, ...filtered];
+              // Update the preview list with new files, avoiding duplicates
+              setFilePreview((prevPreview) => {
+                const filteredPrevPreview = prevPreview.filter(
+                  (name) =>
+                    !nonDuplicateNewFiles.some((file) => file.name === name)
+                );
+                return [
+                  ...filteredPrevPreview,
+                  ...nonDuplicateNewFiles.map((file) => file.name),
+                ];
               });
             }}
           />
@@ -157,9 +179,18 @@ function TaskForm({
         </div>
 
         <div className="file-list mt-2">
+          {/* Existing Files */}
+          {existingFiles.length > 0 &&
+            existingFiles.map((file) => (
+              <div key={`existing-${file.id}`} className="small text-muted">
+                📎 {file.fileName} (existing)
+              </div>
+            ))}
+
+          {/* Added files */}
           {filePreview.length > 0 &&
             filePreview.map((name, i) => (
-              <div key={i} className="small text-muted">
+              <div key={`new-${i}`} className="small text-muted">
                 📎 {name}
               </div>
             ))}

@@ -38,6 +38,7 @@ const Task = () => {
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [filePreview, setFilePreview] = useState([]);
+  const [existingFiles, setExistingFiles] = useState([]);
 
   const fileInputRef = React.useRef(null);
 
@@ -70,8 +71,16 @@ const Task = () => {
         attachments: null,
       });
 
-      setFilePreview(editingTask.attachments?.map((a) => a.fileName) || []);
-      setSelectedFiles(editingTask.attachments || []);
+      // Set the existingFiles-state with meta-data from backend, or empty array:
+      setExistingFiles(editingTask.attachments || []);
+
+      // Clear selectedFiles and filePreview:
+      setSelectedFiles([]);
+      setFilePreview([]);
+    } else {
+      setExistingFiles([]);
+      setSelectedFiles([]);
+      setFilePreview([]);
     }
   }, [editingTask]);
 
@@ -127,7 +136,7 @@ const Task = () => {
                     register={register}
                     handleSubmit={handleSubmit}
                     onSubmit={(data) => {
-                      submitTask(data, selectedFiles);
+                      submitTask(data, selectedFiles, existingFiles);
                       if (editingTask) {
                         toast.info(
                           `Task "${data.title}" updated successfully!`
@@ -146,6 +155,8 @@ const Task = () => {
                     setSelectedFiles={setSelectedFiles}
                     filePreview={filePreview}
                     setFilePreview={setFilePreview}
+                    existingFiles={existingFiles}
+                    setExistingFiles={setExistingFiles}
                     fileInputRef={fileInputRef}
                     onCancelEdit={cancelEdit}
                     formShouldReset={formShouldReset}
